@@ -38,11 +38,4 @@ if (!errorResult.hasData()) {
   console.error(errorResult.error);
   return;
 }
-
-// If you want to transform the data, pass additional function as the second argument
-// The result will transform to the new data
-const transformedResult = await guardAsync(Promise.resolve({x: 1}), (data) => {
-  return {y: data.x}
-})
-
 ```

@@ -1,43 +1,32 @@
-type TransformFn<D, T> = (data: D) => T
+export class SafeData<Data, E = Error> {
+  data?: Data;
+  error?: E;
 
-export class SafeData<Data> {
-  data?: Data
-  error?: Error
-
-  hasError(): this is { data?: Data; error: Error } {
-    return !!this.error
+  hasError(): this is { data?: Data; error: E } {
+    return !!this.error;
   }
 
-  hasData(): this is { data: Data; error?: Error } {
-    return !this.hasError()
+  hasData(): this is { data: Data; error?: E } {
+    return !this.hasError();
   }
 }
 
-export async function guard<D, T extends any = D>(func: Promise<D> | (() => D), transformFunc?: TransformFn<D, T>) {
-  if (func instanceof Promise) {
-    return guardAsync(func, transformFunc)
-  }
-  return guardSync(func, transformFunc)
-}
-
-export function guardSync<D, T extends unknown = D>(func: () => D, transformFunc?: TransformFn<D, T>) {
-  const safeData = new SafeData<T>()
+export function guardSync<D>(func: () => D) {
+  const safeData = new SafeData<D>();
   try {
-    const data = func() as Awaited<D>
-    safeData.data = transformFunc?.(data) ?? (data as T)
+    safeData.data = func();
   } catch (error) {
-    safeData.error = error as Error
+    safeData.error = error as Error;
   }
-  return safeData
+  return safeData;
 }
 
-export async function guardAsync<D, T extends unknown = D>(func: Promise<D>, transformFunc?: TransformFn<D, T>) {
-  const safeData = new SafeData<T>()
+export async function guardAsync<D>(func: Promise<D>) {
+  const safeData = new SafeData<D>();
   try {
-    const data = await func
-    safeData.data = transformFunc?.(data) ?? (data as T)
+    safeData.data = await func;
   } catch (error) {
-    safeData.error = error as Error
+    safeData.error = error as Error;
   }
-  return safeData
+  return safeData;
 }
